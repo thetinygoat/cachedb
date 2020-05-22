@@ -6,6 +6,13 @@
 
 ## What is Cachedb
 Cachedb is a lightweight and fast, in-memory data store, which can be used as database cache.
+## Installation
+Make sure `$GOPATH/bin` is added to your path, then run the following commands.
+-  `$ go get -u github.com/thetinygoat/cachedb`
+- `$ cachedb`
+
+The server will be started on `port 9898`.
+
 ## Benchmarks
 ![Alt Text](https://dev-to-uploads.s3.amazonaws.com/i/8staw4cudsyeepg8cj55.png)
 
