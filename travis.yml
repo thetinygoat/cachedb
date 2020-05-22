@@ -5,5 +5,5 @@ go:
   - master
 
 script:
-  - env GO111MODULE=on go build
-  - env GO111MODULE=on go test
+  - go get -d -t ./...
+  - go test -v ./...
