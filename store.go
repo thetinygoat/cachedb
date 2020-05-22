@@ -13,8 +13,8 @@ const (
 	KeyExpired      = "KEY_EXPIRED_ERROR"
 )
 
-// Cache : holds cache signature
-type Cache struct {
+// CacheObject : holds cache signature
+type CacheObject struct {
 	Data       string
 	Identifier string
 	CreatedAt  time.Time
@@ -22,48 +22,56 @@ type Cache struct {
 	TTL        time.Duration
 }
 
+// GlobalCacheRef : maintains global cache state
+type GlobalCacheRef struct {
+	Cache map[string]CacheObject
+}
+
+func (c *GlobalCacheRef) intializeGlobalCache() {
+	c.Cache = make(map[string]CacheObject)
+}
+
 // insert data in the store
-func set(key string, value string, ttl int, globalCacheObject map[string]Cache) map[string]Cache {
-	globalCacheObject[key] = Cache{
+func (c *GlobalCacheRef) set(key string, value string, ttl int) {
+	c.Cache[key] = CacheObject{
 		Data:       value,
 		Identifier: uuid.New().String(),
 		CreatedAt:  time.Now(),
 		ExpireAt:   time.Now().Add(time.Duration(ttl) * time.Second),
 		TTL:        time.Duration(ttl) * time.Second,
 	}
-	return globalCacheObject
 }
 
 // retrieve data from the store
-func get(key string, globalCacheObject map[string]Cache) (string, error) {
-	if cacheObject, ok := globalCacheObject[key]; ok {
+func (c *GlobalCacheRef) get(key string) (string, error) {
+	if cache, ok := c.Cache[key]; ok {
 		// check for infinite expire time
-		if cacheObject.TTL < 0 {
-			return cacheObject.Data, nil
+		if cache.TTL < 0 {
+			return cache.Data, nil
 		}
 		// check for key expiration
-		if time.Now().Sub(cacheObject.ExpireAt) > 0 {
-			delete(globalCacheObject, key)
+		if time.Now().Sub(cache.ExpireAt) > 0 {
+			delete(c.Cache, key)
 			return KeyExpired, errors.New(KeyExpired)
 		}
-		return cacheObject.Data, nil
+		return cache.Data, nil
 	}
 	return KeyDoesNotExist, errors.New(KeyDoesNotExist)
 
 }
 
 // delete a key from the store
-func del(key string, globalCacheObject map[string]Cache) error {
-	if _, ok := globalCacheObject[key]; ok {
-		delete(globalCacheObject, key)
+func (c *GlobalCacheRef) del(key string) error {
+	if _, ok := c.Cache[key]; ok {
+		delete(c.Cache, key)
 		return nil
 	}
 	return errors.New(KeyDoesNotExist)
 }
 
 // clear the global cache store
-func flush(globalCacheObject map[string]Cache) {
-	for key := range globalCacheObject {
-		delete(globalCacheObject, key)
+func (c *GlobalCacheRef) flush() {
+	for key := range c.Cache {
+		delete(c.Cache, key)
 	}
 }
