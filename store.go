@@ -7,10 +7,11 @@ import (
 	"github.com/google/uuid"
 )
 
-// errors
+// constants
 const (
 	KeyDoesNotExist = "KEY_DOES_NOT_EXIST_ERROR"
 	KeyExpired      = "KEY_EXPIRED_ERROR"
+	OK              = "OK"
 )
 
 // CacheObject : holds cache signature
@@ -32,7 +33,7 @@ func (c *GlobalCacheRef) intializeGlobalCache() {
 }
 
 // insert data in the store
-func (c *GlobalCacheRef) set(key string, value string, ttl int) {
+func (c *GlobalCacheRef) set(key string, value string, ttl int) string {
 	c.Cache[key] = CacheObject{
 		Data:       value,
 		Identifier: uuid.New().String(),
@@ -40,6 +41,7 @@ func (c *GlobalCacheRef) set(key string, value string, ttl int) {
 		ExpireAt:   time.Now().Add(time.Duration(ttl) * time.Second),
 		TTL:        time.Duration(ttl) * time.Second,
 	}
+	return OK
 }
 
 // retrieve data from the store
@@ -52,26 +54,27 @@ func (c *GlobalCacheRef) get(key string) (string, error) {
 		// check for key expiration
 		if time.Now().Sub(cache.ExpireAt) > 0 {
 			delete(c.Cache, key)
-			return KeyExpired, errors.New(KeyExpired)
+			return "", errors.New(KeyExpired)
 		}
 		return cache.Data, nil
 	}
-	return KeyDoesNotExist, errors.New(KeyDoesNotExist)
+	return "", errors.New(KeyDoesNotExist)
 
 }
 
 // delete a key from the store
-func (c *GlobalCacheRef) del(key string) error {
+func (c *GlobalCacheRef) del(key string) (string, error) {
 	if _, ok := c.Cache[key]; ok {
 		delete(c.Cache, key)
-		return nil
+		return OK, nil
 	}
-	return errors.New(KeyDoesNotExist)
+	return "", errors.New(KeyDoesNotExist)
 }
 
 // clear the global cache store
-func (c *GlobalCacheRef) flush() {
+func (c *GlobalCacheRef) flush() string {
 	for key := range c.Cache {
 		delete(c.Cache, key)
 	}
+	return OK
 }
