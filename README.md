@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.com/thetinygoat/cachedb.svg?token=QMSyQuzztbU3qV9Nxgsf&branch=master)](https://travis-ci.com/thetinygoat/cachedb)
+
 # CacheDB
 
 ## What is CacheDB
