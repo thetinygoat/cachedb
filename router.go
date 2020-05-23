@@ -11,11 +11,6 @@ import (
 )
 
 // constants
-const (
-	MalformedParams = "MALFORMED_PARAMS"
-
-	DefaultPort = "9898"
-)
 
 // RouterConfig holds router config
 type RouterConfig struct {

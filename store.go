@@ -7,13 +7,6 @@ import (
 	"github.com/google/uuid"
 )
 
-// constants
-const (
-	KeyDoesNotExist = "KEY_DOES_NOT_EXIST_ERROR"
-	KeyExpired      = "KEY_EXPIRED_ERROR"
-	OK              = "OK"
-)
-
 // CacheObject : holds cache signature
 type CacheObject struct {
 	Data       string
