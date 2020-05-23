@@ -9,11 +9,6 @@ import (
 	"github.com/go-chi/chi/middleware"
 )
 
-// constants
-const (
-	MalformedParams = "MALFORMED_PARAMS"
-)
-
 // RouterConfig holds router config
 type RouterConfig struct {
 	router   *chi.Mux
