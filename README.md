@@ -74,11 +74,12 @@ Examples:
 ``
 
 ## Response Codes
-At present there are **three** types of errors strings.
+At present there are **four** types of errors strings.
 
 - `OK` - operations was successful.
 - `KEY_DOES_NOT_EXIST_ERROR` - the specifed key does not exists.
 - `KEY_EXPIRED_ERROR` - the key is expired and cannot be automatically deleted from the store.
+- `MALFORMED_PARAMS` - some required params are not passed or are invalid.
 
 **NOTE:** Keys are only checked for expiration when they are queried, if you are developing make sure to `flush` the store or it might lead to undesireable results.
 
