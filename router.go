@@ -3,11 +3,14 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 )
+
+// constants
 
 // RouterConfig holds router config
 type RouterConfig struct {
@@ -19,6 +22,18 @@ type RouterConfig struct {
 type Response struct {
 	Data  string `json:"data"`
 	Error bool   `json:"error"`
+}
+
+var (
+	serverPort string
+)
+
+func setConfigVars() {
+	if len(os.Getenv("CACHEDB_PORT")) == 0 {
+		serverPort = DefaultPort
+	} else {
+		serverPort = os.Getenv("CACHEDB_PORT")
+	}
 }
 
 func (R *RouterConfig) initializeRouter(CacheRef GlobalCacheRef) {
@@ -99,5 +114,13 @@ func (R *RouterConfig) registerRoutes() {
 		respondWithJSON(w, r, res)
 
 	})
-	log.Fatal(http.ListenAndServe(":9898", r))
+
+	setConfigVars()
+	log.Printf("Using port: %v", serverPort)
+	srv := &http.Server{
+		Addr:    ":" + serverPort,
+		Handler: r,
+	}
+
+	log.Fatal(srv.ListenAndServe())
 }

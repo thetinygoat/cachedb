@@ -6,4 +6,6 @@ const (
 	KeyDoesNotExist = "KEY_DOES_NOT_EXIST_ERROR"
 	KeyExpired      = "KEY_EXPIRED_ERROR"
 	OK              = "OK"
+
+    DefaultPort     = "9898"
 )
