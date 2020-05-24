@@ -44,11 +44,11 @@ func (R *RouterConfig) initializeRouter(CacheRef GlobalCacheRef) {
 func (R *RouterConfig) registerRoutes() {
 	r := R.router
 
-	r.Get("/get", func(w http.ResponseWriter, r *http.Request) {
+	r.Get(GetRoute.Path, func(w http.ResponseWriter, r *http.Request) {
 
-		key := r.URL.Query().Get("key")
+		vars := GetRoute.getVars((r.URL.Query()))
 
-		value, err := R.CacheRef.get(key)
+		value, err := R.CacheRef.get(vars["key"])
 		res := Response{}
 		if err != nil {
 			res.Data = err.Error()
@@ -63,12 +63,11 @@ func (R *RouterConfig) registerRoutes() {
 		}
 
 	})
-	r.Get("/set", func(w http.ResponseWriter, r *http.Request) {
-		key := r.URL.Query().Get("key")
-		value := r.URL.Query().Get("value")
-		ttlRaw := r.URL.Query().Get("ttl")
+	r.Get(SetRoute.Path, func(w http.ResponseWriter, r *http.Request) {
 
-		ttl, err := strconv.Atoi(ttlRaw)
+		vars := SetRoute.getVars(r.URL.Query())
+
+		ttl, err := strconv.Atoi(vars["ttlRaw"])
 
 		res := Response{}
 		if err != nil {
@@ -77,7 +76,7 @@ func (R *RouterConfig) registerRoutes() {
 
 			respondWithJSON(w, r, res)
 		} else {
-			response := R.CacheRef.set(key, value, ttl)
+			response := R.CacheRef.set(vars["key"], vars["value"], ttl)
 			res.Data = response
 			res.Error = false
 
@@ -85,10 +84,10 @@ func (R *RouterConfig) registerRoutes() {
 		}
 
 	})
-	r.Get("/del", func(w http.ResponseWriter, r *http.Request) {
+	r.Get(DelRoute.Path, func(w http.ResponseWriter, r *http.Request) {
 
-		key := r.URL.Query().Get("key")
-		response, err := R.CacheRef.del(key)
+		vars := DelRoute.getVars(r.URL.Query())
+		response, err := R.CacheRef.del(vars["key"])
 		res := Response{}
 		if err != nil {
 			res.Data = err.Error()
@@ -103,7 +102,7 @@ func (R *RouterConfig) registerRoutes() {
 		}
 
 	})
-	r.Get("/flush", func(w http.ResponseWriter, r *http.Request) {
+	r.Get(FlushRoute.Path, func(w http.ResponseWriter, r *http.Request) {
 		response := R.CacheRef.flush()
 		res := Response{}
 		res.Data = response
