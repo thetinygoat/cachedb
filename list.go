@@ -17,13 +17,14 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"sync"
 )
 
 // Constants
 const (
-	listEmpty = "LIST_EMPTY"
+	emptyString  = "<nil>"
+	listEmpty    = "LIST_EMPTY"
+	invalidRange = "INVALID_RANGE"
 )
 
 // ListNode -> Node struct
@@ -41,6 +42,9 @@ type List struct {
 	Size  int
 	mutex sync.Mutex
 }
+
+// LMap -> List map to hold refs to all the lists
+var LMap = make(map[string]*List)
 
 func (l *List) rpush(data string) error {
 	l.mutex.Lock()
@@ -74,7 +78,7 @@ func (l *List) rpop() (string, error) {
 	l.mutex.Lock()
 	defer l.mutex.Unlock()
 	if l.Size <= 0 {
-		return "", errors.New(listEmpty)
+		return emptyString, errors.New(listEmpty)
 	}
 	rdata := l.Tail.Data
 	l.Tail = l.Tail.Prev
@@ -93,7 +97,7 @@ func (l *List) lpop() (string, error) {
 	l.mutex.Lock()
 	defer l.mutex.Unlock()
 	if l.Head == nil {
-		return "", errors.New(listEmpty)
+		return emptyString, errors.New(listEmpty)
 	}
 	rdata := l.Head.Data
 	l.Head = l.Head.Next
@@ -108,11 +112,11 @@ func (l *List) lpop() (string, error) {
 	return rdata, nil
 }
 
-func (l *List) lrange(start int, stop int) int {
+func (l *List) lrange(start int, stop int) ([]string, error) {
 	l.mutex.Lock()
 	defer l.mutex.Unlock()
 	if start < 0 {
-		return 1
+		return nil, errors.New(invalidRange)
 	}
 	if stop < 0 {
 		stop = l.Size
@@ -126,10 +130,11 @@ func (l *List) lrange(start int, stop int) int {
 		startRef = startRef.Next
 		idx++
 	}
+	var values []string
 	for start < stop {
-		fmt.Println(startRef.Data)
+		values = append(values, startRef.Data)
 		startRef = startRef.Next
 		start++
 	}
-	return 1
+	return values, nil
 }
