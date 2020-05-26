@@ -20,13 +20,6 @@ import (
 	"sync"
 )
 
-// Constants
-const (
-	emptyString  = "<nil>"
-	listEmpty    = "LIST_EMPTY"
-	invalidRange = "INVALID_RANGE"
-)
-
 // ListNode -> Node struct
 type ListNode struct {
 	Data string
@@ -78,7 +71,7 @@ func (l *List) rpop() (string, error) {
 	l.mutex.Lock()
 	defer l.mutex.Unlock()
 	if l.Size <= 0 {
-		return emptyString, errors.New(listEmpty)
+		return nilString, errors.New(listEmpty)
 	}
 	rdata := l.Tail.Data
 	l.Tail = l.Tail.Prev
@@ -97,7 +90,7 @@ func (l *List) lpop() (string, error) {
 	l.mutex.Lock()
 	defer l.mutex.Unlock()
 	if l.Head == nil {
-		return emptyString, errors.New(listEmpty)
+		return nilString, errors.New(listEmpty)
 	}
 	rdata := l.Head.Data
 	l.Head = l.Head.Next
