@@ -17,6 +17,7 @@ package main
 
 import (
 	"errors"
+	"sync"
 	"time"
 )
 
@@ -25,18 +26,23 @@ type Set struct {
 	Data    string
 	TTL     time.Duration
 	AddedAt time.Time
+	mutex   sync.Mutex
 }
 
 // SMap -> map to hold refs to sets
 var SMap = make(map[string]*Set)
 
 func (s *Set) set(value string, ttl int) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
 	s.Data = value
 	s.TTL = time.Duration(ttl) * time.Second
 	s.AddedAt = time.Now()
 }
 
 func (s *Set) get() (string, error) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
 	now := time.Now()
 	expiration := s.AddedAt.Add(s.TTL)
 	if now.Sub(expiration) > 0 {
