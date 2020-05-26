@@ -1,20 +1,20 @@
+// Copyright (C) 2020  Sachin Saini
+
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 package main
 
-import "fmt"
-
 func main() {
-	list := List{Name: "mylist"}
-	list.rpush("1")
-	list.rpush("2")
-	list.rpush("3")
-	list.rpush("4")
-	list.rpush("5")
-	list.rpush("6")
-	fmt.Println(list.lpop())
-	fmt.Println(list.lpop())
-	fmt.Println(list.lpop())
-	fmt.Println(list.lpop())
-	fmt.Println(list.lpop())
-	fmt.Println(list.lpop())
-	list.lrange(0, 999)
+	R := Router{}
+	R.initializeRouter()
 }
