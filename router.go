@@ -15,10 +15,8 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
-	"strconv"
 
 	"github.com/julienschmidt/httprouter"
 )
@@ -27,121 +25,37 @@ import (
 type Router struct {
 	router *httprouter.Router
 }
-type Response struct {
-	Data  string
-	Error error
-}
-
-func rpushHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	name := ps.ByName("name")
-	if _, ok := LMap[name]; !ok {
-		LMap[name] = &List{Name: name}
-	}
-	data := r.URL.Query().Get("data")
-	err := LMap[name].rpush(data)
-	if err != nil {
-		fmt.Fprint(w, err.Error())
-	} else {
-		fmt.Fprint(w, ok)
-	}
-}
-
-func rpopHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	name := ps.ByName("name")
-	if _, ok := LMap[name]; !ok {
-		LMap[name] = &List{Name: name}
-	}
-	data, err := LMap[name].rpop()
-	if err != nil {
-		fmt.Fprint(w, err.Error())
-	} else {
-		fmt.Fprint(w, data)
-	}
-}
-
-func lpushHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	name := ps.ByName("name")
-	if _, ok := LMap[name]; !ok {
-		LMap[name] = &List{Name: name}
-	}
-	data := r.URL.Query().Get("data")
-	err := LMap[name].lpush(data)
-	if err != nil {
-		fmt.Fprint(w, err.Error())
-	} else {
-		fmt.Fprint(w, ok)
-	}
-}
-
-func lpopHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	name := ps.ByName("name")
-	if _, ok := LMap[name]; !ok {
-		LMap[name] = &List{Name: name}
-	}
-	data, err := LMap[name].lpop()
-	if err != nil {
-		fmt.Fprint(w, err.Error())
-	} else {
-		fmt.Fprint(w, data)
-	}
-}
-
-func lrangeHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	name := ps.ByName("name")
-	if _, ok := LMap[name]; !ok {
-		LMap[name] = &List{Name: name}
-	}
-	startRaw := r.URL.Query().Get("start")
-	stopRaw := r.URL.Query().Get("stop")
-	start, err := strconv.Atoi(startRaw)
-	stop, err := strconv.Atoi(stopRaw)
-	data, err := LMap[name].lrange(start, stop)
-	if err != nil {
-		fmt.Fprint(w, err.Error())
-	} else {
-		fmt.Fprint(w, data)
-	}
-}
 
 func setHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	key := ps.ByName("key")
-	responseChan := make(chan Response)
-	if _, ok := SMap[key]; !ok {
-		SMap[key] = &Set{}
-	}
-	value := r.URL.Query().Get("value")
-	ttlRaw := r.URL.Query().Get("ttl")
-	ttl, _ := strconv.Atoi(ttlRaw)
-	go SMap[key].set(value, ttl, responseChan)
-	response := <-responseChan
-	if response.Error != nil {
-		fmt.Fprint(w, response.Error.Error())
-	} else {
-		fmt.Fprint(w, response.Data)
-	}
+	setSet(w, r, ps)
 }
+
 func getHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	key := ps.ByName("key")
-	if _, ok := SMap[key]; !ok {
-		fmt.Fprint(w, nilString)
-		return
-	}
-	responseChan := make(chan Response)
-	go SMap[key].get(responseChan)
-	response := <-responseChan
-	if response.Error != nil {
-		fmt.Fprint(w, response.Data)
-		delete(SMap, key)
-	} else {
-		fmt.Fprint(w, response.Data)
-	}
+	getSet(w, r, ps)
 }
 
 func delHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	key := ps.ByName("key")
-	delete(SMap, key)
-	fmt.Fprint(w, ok)
+	delSet(w, r, ps)
+}
 
+func rpushHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	rpushList(w, r, ps)
+}
+
+func rpopHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	rpopList(w, r, ps)
+}
+
+func lpushHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	lpushList(w, r, ps)
+}
+
+func lpopHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	lpopList(w, r, ps)
+}
+
+func lrangeHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	lrangeList(w, r, ps)
 }
 
 func (R *Router) initializeRouter() {
