@@ -39,9 +39,7 @@ type List struct {
 // LMap -> List map to hold refs to all the lists
 var LMap = make(map[string]*List)
 
-func (l *List) rpush(data string) error {
-	l.mutex.Lock()
-	defer l.mutex.Unlock()
+func (l *List) rpush(data string, response chan ChannelResponse) {
 	if l.Head == nil {
 		l.Head = &ListNode{Data: data, Next: nil, Prev: nil}
 		l.Tail = l.Head
@@ -50,12 +48,10 @@ func (l *List) rpush(data string) error {
 		l.Tail = l.Tail.Next
 	}
 	l.Size++
-	return nil
+	response <- ChannelResponse{Data: ok, Error: nil}
 }
 
-func (l *List) lpush(data string) error {
-	l.mutex.Lock()
-	defer l.mutex.Unlock()
+func (l *List) lpush(data string, response chan ChannelResponse) {
 	if l.Head == nil {
 		l.Head = &ListNode{Data: data, Next: nil, Prev: nil}
 		l.Tail = l.Head
@@ -64,70 +60,67 @@ func (l *List) lpush(data string) error {
 		l.Head = node
 	}
 	l.Size++
-	return nil
+	response <- ChannelResponse{Data: ok, Error: nil}
 }
 
-func (l *List) rpop() (string, error) {
-	l.mutex.Lock()
-	defer l.mutex.Unlock()
+func (l *List) rpop(response chan ChannelResponse) {
 	if l.Size <= 0 {
-		return nilString, errors.New(listEmpty)
+		response <- ChannelResponse{Data: nilString, Error: errors.New(listEmpty)}
+	} else {
+		rdata := l.Tail.Data
+		l.Tail = l.Tail.Prev
+		if l.Tail != nil {
+			l.Tail.Next = nil
+		}
+		if l.Size == 1 {
+			l.Head = nil
+			l.Tail = nil
+		}
+		l.Size--
+		response <- ChannelResponse{Data: rdata, Error: nil}
 	}
-	rdata := l.Tail.Data
-	l.Tail = l.Tail.Prev
-	if l.Tail != nil {
-		l.Tail.Next = nil
-	}
-	if l.Size == 1 {
-		l.Head = nil
-		l.Tail = nil
-	}
-	l.Size--
-	return rdata, nil
 }
 
-func (l *List) lpop() (string, error) {
-	l.mutex.Lock()
-	defer l.mutex.Unlock()
+func (l *List) lpop(response chan ChannelResponse) {
 	if l.Head == nil {
-		return nilString, errors.New(listEmpty)
+		response <- ChannelResponse{Data: nilString, Error: errors.New(listEmpty)}
+	} else {
+		rdata := l.Head.Data
+		l.Head = l.Head.Next
+		if l.Head != nil {
+			l.Head.Prev = nil
+		}
+		if l.Size == 1 {
+			l.Head = nil
+			l.Tail = nil
+		}
+		l.Size--
+		response <- ChannelResponse{Data: rdata, Error: nil}
 	}
-	rdata := l.Head.Data
-	l.Head = l.Head.Next
-	if l.Head != nil {
-		l.Head.Prev = nil
-	}
-	if l.Size == 1 {
-		l.Head = nil
-		l.Tail = nil
-	}
-	l.Size--
-	return rdata, nil
 }
 
-func (l *List) lrange(start int, stop int) ([]string, error) {
-	l.mutex.Lock()
-	defer l.mutex.Unlock()
+func (l *List) lrange(start int, stop int, response chan ChannelResponse) {
 	if start < 0 {
-		return nil, errors.New(invalidRange)
+		response <- ChannelResponse{Data: []string{}, Error: errors.New(invalidRange)}
+	} else {
+		if stop < 0 {
+			stop = l.Size
+		}
+		if stop > l.Size {
+			stop = l.Size
+		}
+		idx := 0
+		startRef := l.Head
+		for idx != start {
+			startRef = startRef.Next
+			idx++
+		}
+		var values []string
+		for start < stop {
+			values = append(values, startRef.Data)
+			startRef = startRef.Next
+			start++
+		}
+		response <- ChannelResponse{Data: values, Error: nil}
 	}
-	if stop < 0 {
-		stop = l.Size
-	}
-	if stop > l.Size {
-		stop = l.Size
-	}
-	idx := 0
-	startRef := l.Head
-	for idx != start {
-		startRef = startRef.Next
-		idx++
-	}
-	var values []string
-	for start < stop {
-		values = append(values, startRef.Data)
-		startRef = startRef.Next
-		start++
-	}
-	return values, nil
 }

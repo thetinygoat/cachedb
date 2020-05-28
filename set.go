@@ -32,20 +32,20 @@ type Set struct {
 // SMap -> map to hold refs to sets
 var SMap = make(map[string]*Set)
 
-func (s *Set) set(value string, ttl int, response chan Response) {
+func (s *Set) set(value string, ttl int, response chan ChannelResponse) {
 	s.Data = value
 	s.TTL = time.Duration(ttl) * time.Second
 	s.AddedAt = time.Now()
-	response <- Response{Data: ok, Error: nil}
+	response <- ChannelResponse{Data: ok, Error: nil}
 }
 
-func (s *Set) get(response chan Response) {
+func (s *Set) get(response chan ChannelResponse) {
 	now := time.Now()
 	expiration := s.AddedAt.Add(s.TTL)
 	if now.Sub(expiration) > 0 {
-		response <- Response{Data: nilString, Error: errors.New(keyExpired)}
+		response <- ChannelResponse{Data: nilString, Error: errors.New(keyExpired)}
 	} else {
-		response <- Response{Data: s.Data, Error: nil}
+		response <- ChannelResponse{Data: s.Data, Error: nil}
 	}
 
 }
