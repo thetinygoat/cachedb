@@ -27,6 +27,10 @@ import (
 type Router struct {
 	router *httprouter.Router
 }
+type Response struct {
+	Data  string
+	Error error
+}
 
 func rpushHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	name := ps.ByName("name")
@@ -101,14 +105,20 @@ func lrangeHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 
 func setHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	key := ps.ByName("key")
+	responseChan := make(chan Response)
 	if _, ok := SMap[key]; !ok {
 		SMap[key] = &Set{}
 	}
 	value := r.URL.Query().Get("value")
 	ttlRaw := r.URL.Query().Get("ttl")
 	ttl, _ := strconv.Atoi(ttlRaw)
-	SMap[key].set(value, ttl)
-	fmt.Fprint(w, ok)
+	go SMap[key].set(value, ttl, responseChan)
+	response := <-responseChan
+	if response.Error != nil {
+		fmt.Fprint(w, response.Error.Error())
+	} else {
+		fmt.Fprint(w, response.Data)
+	}
 }
 func getHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	key := ps.ByName("key")
@@ -116,12 +126,14 @@ func getHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		fmt.Fprint(w, nilString)
 		return
 	}
-	data, err := SMap[key].get()
-	if err != nil {
-		fmt.Fprint(w, err.Error())
+	responseChan := make(chan Response)
+	go SMap[key].get(responseChan)
+	response := <-responseChan
+	if response.Error != nil {
+		fmt.Fprint(w, response.Data)
 		delete(SMap, key)
 	} else {
-		fmt.Fprint(w, data)
+		fmt.Fprint(w, response.Data)
 	}
 }
 

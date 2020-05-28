@@ -32,21 +32,20 @@ type Set struct {
 // SMap -> map to hold refs to sets
 var SMap = make(map[string]*Set)
 
-func (s *Set) set(value string, ttl int) {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
+func (s *Set) set(value string, ttl int, response chan Response) {
 	s.Data = value
 	s.TTL = time.Duration(ttl) * time.Second
 	s.AddedAt = time.Now()
+	response <- Response{Data: ok, Error: nil}
 }
 
-func (s *Set) get() (string, error) {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
+func (s *Set) get(response chan Response) {
 	now := time.Now()
 	expiration := s.AddedAt.Add(s.TTL)
 	if now.Sub(expiration) > 0 {
-		return nilString, errors.New(keyExpired)
+		response <- Response{Data: nilString, Error: errors.New(keyExpired)}
+	} else {
+		response <- Response{Data: s.Data, Error: nil}
 	}
-	return s.Data, nil
+
 }
