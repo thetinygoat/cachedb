@@ -15,6 +15,7 @@
 package main
 
 func main() {
+	initConfigFile()
 	R := Router{}
 	R.initializeRouter()
 }
