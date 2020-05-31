@@ -17,110 +17,109 @@ package main
 
 import (
 	"errors"
-	"sync"
+	"strings"
 )
 
 // ListNode -> Node struct
 type ListNode struct {
-	Data string
-	Next *ListNode
-	Prev *ListNode
+	data string
+	next *ListNode
+	prev *ListNode
 }
 
 // List -> List struct
 type List struct {
-	Name  string
-	Head  *ListNode
-	Tail  *ListNode
-	Size  int
-	mutex sync.Mutex
+	name string
+	head *ListNode
+	tail *ListNode
+	size int
 }
 
 // LMap -> List map to hold refs to all the lists
 var LMap = make(map[string]*List)
 
-func (l *List) rpush(data string, response chan ChannelResponse) {
-	if l.Head == nil {
-		l.Head = &ListNode{Data: data, Next: nil, Prev: nil}
-		l.Tail = l.Head
+func (l *List) append(data string, response chan ChannelResponse) {
+	newNode := &ListNode{data: data, prev: l.tail}
+	if l.size == 0 {
+		l.head = newNode
+		l.tail = newNode
 	} else {
-		l.Tail.Next = &ListNode{Data: data, Next: nil, Prev: l.Tail}
-		l.Tail = l.Tail.Next
+		l.tail.next = newNode
+		l.tail = newNode
 	}
-	l.Size++
+	l.size++
 	response <- ChannelResponse{Data: ok, Error: nil}
 }
 
-func (l *List) lpush(data string, response chan ChannelResponse) {
-	if l.Head == nil {
-		l.Head = &ListNode{Data: data, Next: nil, Prev: nil}
-		l.Tail = l.Head
+func (l *List) prepend(data string, response chan ChannelResponse) {
+	newNode := &ListNode{data: data, next: l.head}
+	if l.size == 0 {
+		l.head = newNode
+		l.tail = newNode
 	} else {
-		node := &ListNode{Data: data, Next: l.Head, Prev: nil}
-		l.Head = node
+		l.head.prev = newNode
+		l.head = newNode
 	}
-	l.Size++
+	l.size++
 	response <- ChannelResponse{Data: ok, Error: nil}
 }
 
-func (l *List) rpop(response chan ChannelResponse) {
-	if l.Head == nil {
+func (l *List) removelast(response chan ChannelResponse) {
+
+	if l.size == 0 {
 		response <- ChannelResponse{Data: nilString, Error: errors.New(listEmpty)}
+	} else if l.size == 1 {
+		data := l.head.data
+		l.clear()
+		response <- ChannelResponse{Data: data, Error: nil}
 	} else {
-		rdata := l.Tail.Data
-		l.Tail = l.Tail.Prev
-		if l.Tail != nil {
-			l.Tail.Next = nil
+		node := l.tail
+		data := node.data
+		if l.tail.prev != nil {
+			l.tail = l.tail.prev
 		}
-		if l.Size == 1 {
-			l.Head = nil
-			l.Tail = nil
-		}
-		l.Size--
-		response <- ChannelResponse{Data: rdata, Error: nil}
+		node = nil
+		l.size--
+		response <- ChannelResponse{Data: data, Error: nil}
 	}
 }
 
-func (l *List) lpop(response chan ChannelResponse) {
-	if l.Head == nil {
+func (l *List) removefirst(response chan ChannelResponse) {
+	if l.size == 0 {
 		response <- ChannelResponse{Data: nilString, Error: errors.New(listEmpty)}
+	} else if l.size == 1 {
+		data := l.head.data
+		l.clear()
+		response <- ChannelResponse{Data: data, Error: nil}
 	} else {
-		rdata := l.Head.Data
-		l.Head = l.Head.Next
-		if l.Head != nil {
-			l.Head.Prev = nil
+		node := l.head
+		data := node.data
+		if l.head.next != nil {
+			l.head = l.head.next
 		}
-		if l.Size == 1 {
-			l.Head = nil
-			l.Tail = nil
-		}
-		l.Size--
-		response <- ChannelResponse{Data: rdata, Error: nil}
+		node = nil
+		l.size--
+		response <- ChannelResponse{Data: data, Error: nil}
 	}
 }
 
-func (l *List) lrange(start int, stop int, response chan ChannelResponse) {
-	if start < 0 {
-		response <- ChannelResponse{Data: []string{}, Error: errors.New(invalidRange)}
+func (l *List) values(response chan ChannelResponse) {
+	if l.size == 0 {
+		response <- ChannelResponse{Data: nilString, Error: errors.New(listEmpty)}
 	} else {
-		if stop < 0 {
-			stop = l.Size
+		startRef := l.head
+		var b strings.Builder
+		for startRef != nil {
+			b.WriteString(startRef.data)
+			b.WriteString(" ")
+			startRef = startRef.next
 		}
-		if stop > l.Size {
-			stop = l.Size
-		}
-		idx := 0
-		startRef := l.Head
-		for idx != start {
-			startRef = startRef.Next
-			idx++
-		}
-		var values []string
-		for start < stop {
-			values = append(values, startRef.Data)
-			startRef = startRef.Next
-			start++
-		}
-		response <- ChannelResponse{Data: values, Error: nil}
+		response <- ChannelResponse{Data: b.String(), Error: nil}
 	}
+}
+
+func (l *List) clear() {
+	l.size = 0
+	l.head = nil
+	l.tail = nil
 }
