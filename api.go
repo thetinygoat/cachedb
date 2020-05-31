@@ -78,14 +78,14 @@ func delSet(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	w.Write([]byte(ok))
 }
 
-func rpushList(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func append(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	name := ps.ByName(NAME)
 	if _, exists := LMap[name]; !exists {
-		LMap[name] = &List{Name: name}
+		LMap[name] = &List{name: name}
 	}
 	responseChannel := make(chan ChannelResponse)
 	value := r.URL.Query().Get(VALUE)
-	go LMap[name].rpush(value, responseChannel)
+	go LMap[name].append(value, responseChannel)
 	data := <-responseChannel
 	if data.Error != nil {
 		w.Write([]byte(fmt.Sprintf("%v", data.Data)))
@@ -94,14 +94,14 @@ func rpushList(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	}
 }
 
-func lpushList(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func prepend(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	name := ps.ByName(NAME)
 	if _, exists := LMap[name]; !exists {
-		LMap[name] = &List{Name: name}
+		LMap[name] = &List{name: name}
 	}
 	responseChannel := make(chan ChannelResponse)
 	value := r.URL.Query().Get(VALUE)
-	go LMap[name].lpush(value, responseChannel)
+	go LMap[name].prepend(value, responseChannel)
 	data := <-responseChannel
 	if data.Error != nil {
 		w.Write([]byte(fmt.Sprintf("%v", data.Data)))
@@ -110,13 +110,13 @@ func lpushList(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	}
 }
 
-func rpopList(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func removelast(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	name := ps.ByName(NAME)
 	if _, ok := LMap[name]; !ok {
 		w.Write([]byte(nilString))
 	} else {
 		responseChannel := make(chan ChannelResponse)
-		go LMap[name].rpop(responseChannel)
+		go LMap[name].removelast(responseChannel)
 		data := <-responseChannel
 		if data.Error != nil {
 			w.Write([]byte(fmt.Sprintf("%v", data.Data)))
@@ -126,13 +126,13 @@ func rpopList(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	}
 }
 
-func lpopList(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func removefirst(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	name := ps.ByName(NAME)
 	if _, exists := LMap[name]; !exists {
 		w.Write([]byte(nilString))
 	} else {
 		responseChannel := make(chan ChannelResponse)
-		go LMap[name].lpop(responseChannel)
+		go LMap[name].removefirst(responseChannel)
 		data := <-responseChannel
 		if data.Error != nil {
 			w.Write([]byte(fmt.Sprintf("%v", data.Data)))
@@ -142,17 +142,13 @@ func lpopList(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	}
 }
 
-func lrangeList(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func values(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	name := ps.ByName(NAME)
 	if _, exists := LMap[name]; !exists {
 		w.Write([]byte(nilString))
 	} else {
-		startRaw := r.URL.Query().Get(START)
-		stopRaw := r.URL.Query().Get(STOP)
-		start, _ := strconv.Atoi(startRaw)
-		stop, _ := strconv.Atoi(stopRaw)
 		responseChannel := make(chan ChannelResponse)
-		go LMap[name].lrange(start, stop, responseChannel)
+		go LMap[name].values(responseChannel)
 		data := <-responseChannel
 		if data.Error != nil {
 			w.Write([]byte(fmt.Sprintf("%v", data.Data)))

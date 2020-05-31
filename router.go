@@ -40,33 +40,33 @@ func delHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	delSet(w, r, ps)
 }
 
-func rpushHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	rpushList(w, r, ps)
+func appendHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	append(w, r, ps)
 }
 
-func rpopHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	rpopList(w, r, ps)
+func prependHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	prepend(w, r, ps)
 }
 
-func lpushHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	lpushList(w, r, ps)
+func removelastHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	removelast(w, r, ps)
 }
 
-func lpopHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	lpopList(w, r, ps)
+func removefirstHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	removefirst(w, r, ps)
 }
 
-func lrangeHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	lrangeList(w, r, ps)
+func valuesHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	values(w, r, ps)
 }
 
 func (R *Router) initializeRouter() {
 	R.router = httprouter.New()
-	R.router.POST("/lists/rpush/:name", rpushHandler)
-	R.router.POST("/lists/rpop/:name", rpopHandler)
-	R.router.POST("/lists/lpush/:name", lpushHandler)
-	R.router.POST("/lists/lpop/:name", lpopHandler)
-	R.router.GET("/lists/lrange/:name", lrangeHandler)
+	R.router.POST("/lists/append/:name", appendHandler)
+	R.router.POST("/lists/prepend/:name", prependHandler)
+	R.router.POST("/lists/removelast/:name", removelastHandler)
+	R.router.POST("/lists/removefirst/:name", removefirstHandler)
+	R.router.GET("/lists/values/:name", valuesHandler)
 	R.router.POST("/sets/set/:key", setHandler)
 	R.router.GET("/sets/get/:key", getHandler)
 	R.router.POST("/sets/del/:key", delHandler)
