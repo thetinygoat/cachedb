@@ -15,8 +15,10 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/julienschmidt/httprouter"
 )
@@ -68,5 +70,10 @@ func (R *Router) initializeRouter() {
 	R.router.POST("/sets/set/:key", setHandler)
 	R.router.GET("/sets/get/:key", getHandler)
 	R.router.POST("/sets/del/:key", delHandler)
-	log.Fatal(http.ListenAndServe(":9898", R.router))
+	s := &http.Server{
+		Addr:    fmt.Sprintf(":%s", os.Getenv(CachedbPort)),
+		Handler: Logger(R.router),
+	}
+	fmt.Printf("Cachedb server running on port: %s\n", os.Getenv(CachedbPort))
+	log.Fatal(s.ListenAndServe())
 }
