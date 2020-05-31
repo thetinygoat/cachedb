@@ -16,26 +16,30 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"os"
 	"path/filepath"
 )
 
+// constants
 const (
-	CONFIG_DIR  = ".config/cachedb"
-	CONFIG_FILE = "config.json"
+	ConfigDir       = ".config/cachedb"
+	ConfigFile      = "config.json"
+	CachedbPort     = "CACHEDB_PORT"
+	CachedbUser     = "CACHEDB_USER"
+	CachedbPassword = "CACHEDB_PASSWORD"
 )
 
+// Config struct
 type Config struct {
-	Port     int    `json:"port"`
+	Port     string `json:"port"`
 	User     string `json:"user"`
 	Password string `json:"password"`
 }
 
 func initConfigFile() {
-	dirPath := filepath.Join(os.Getenv("HOME"), CONFIG_DIR)
-	configFilePath := filepath.Join(dirPath, CONFIG_FILE)
-	defaultConfig := Config{Port: 9898, User: "", Password: ""}
+	dirPath := filepath.Join(os.Getenv("HOME"), ConfigDir)
+	configFilePath := filepath.Join(dirPath, ConfigFile)
+	defaultConfig := Config{Port: "9898", User: "", Password: ""}
 	if _, err := os.Stat(configFilePath); err != nil {
 		os.Mkdir(dirPath, 0755)
 		f, err := os.Create(configFilePath)
@@ -52,5 +56,7 @@ func initConfigFile() {
 	}
 	var config Config
 	json.NewDecoder(f).Decode(&config)
-	fmt.Println(config)
+	os.Setenv(CachedbPort, config.Port)
+	os.Setenv(CachedbUser, config.User)
+	os.Setenv(CachedbPassword, config.Password)
 }
