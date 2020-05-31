@@ -64,7 +64,7 @@ func (l *List) lpush(data string, response chan ChannelResponse) {
 }
 
 func (l *List) rpop(response chan ChannelResponse) {
-	if l.Size <= 0 {
+	if l.Head == nil {
 		response <- ChannelResponse{Data: nilString, Error: errors.New(listEmpty)}
 	} else {
 		rdata := l.Tail.Data
