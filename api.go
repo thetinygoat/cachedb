@@ -22,22 +22,24 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
+// constants
 const (
-	KEY   = "key"
-	VALUE = "value"
+	Key   = "key"
+	Value = "value"
 	TTL   = "ttl"
-	NAME  = "name"
-	START = "start"
-	STOP  = "stop"
+	Name  = "name"
+	Start = "start"
+	Stop  = "stop"
 )
 
+// ChannelResponse struct
 type ChannelResponse struct {
 	Data  interface{}
 	Error error
 }
 
 func getSet(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	key := ps.ByName(KEY)
+	key := ps.ByName(Key)
 	if _, exists := SMap[key]; !exists {
 		w.Write([]byte(nilString))
 	} else {
@@ -54,13 +56,13 @@ func getSet(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 }
 
 func setSet(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	key := ps.ByName(KEY)
+	key := ps.ByName(Key)
 	if _, exists := SMap[key]; !exists {
 		SMap[key] = &Set{}
 	}
 
 	responseChannel := make(chan ChannelResponse)
-	value := r.URL.Query().Get(VALUE)
+	value := r.URL.Query().Get(Value)
 	ttlRaw := r.URL.Query().Get(TTL)
 	ttl, _ := strconv.Atoi(ttlRaw)
 	go SMap[key].set(value, ttl, responseChannel)
@@ -73,18 +75,18 @@ func setSet(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 }
 
 func delSet(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	key := ps.ByName(KEY)
+	key := ps.ByName(Key)
 	delete(SMap, key)
 	w.Write([]byte(ok))
 }
 
 func append(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	name := ps.ByName(NAME)
+	name := ps.ByName(Name)
 	if _, exists := LMap[name]; !exists {
 		LMap[name] = &List{name: name}
 	}
 	responseChannel := make(chan ChannelResponse)
-	value := r.URL.Query().Get(VALUE)
+	value := r.URL.Query().Get(Value)
 	go LMap[name].append(value, responseChannel)
 	data := <-responseChannel
 	if data.Error != nil {
@@ -95,12 +97,12 @@ func append(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 }
 
 func prepend(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	name := ps.ByName(NAME)
+	name := ps.ByName(Name)
 	if _, exists := LMap[name]; !exists {
 		LMap[name] = &List{name: name}
 	}
 	responseChannel := make(chan ChannelResponse)
-	value := r.URL.Query().Get(VALUE)
+	value := r.URL.Query().Get(Value)
 	go LMap[name].prepend(value, responseChannel)
 	data := <-responseChannel
 	if data.Error != nil {
@@ -111,7 +113,7 @@ func prepend(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 }
 
 func removelast(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	name := ps.ByName(NAME)
+	name := ps.ByName(Name)
 	if _, ok := LMap[name]; !ok {
 		w.Write([]byte(nilString))
 	} else {
@@ -127,7 +129,7 @@ func removelast(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 }
 
 func removefirst(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	name := ps.ByName(NAME)
+	name := ps.ByName(Name)
 	if _, exists := LMap[name]; !exists {
 		w.Write([]byte(nilString))
 	} else {
@@ -143,7 +145,7 @@ func removefirst(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 }
 
 func values(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	name := ps.ByName(NAME)
+	name := ps.ByName(Name)
 	if _, exists := LMap[name]; !exists {
 		w.Write([]byte(nilString))
 	} else {
