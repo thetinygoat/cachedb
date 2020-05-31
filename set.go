@@ -17,7 +17,6 @@ package main
 
 import (
 	"errors"
-	"sync"
 	"time"
 )
 
@@ -26,7 +25,6 @@ type Set struct {
 	Data    string
 	TTL     time.Duration
 	AddedAt time.Time
-	mutex   sync.Mutex
 }
 
 // SMap -> map to hold refs to sets
