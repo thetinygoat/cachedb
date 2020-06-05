@@ -72,7 +72,7 @@ func (R *Router) initializeRouter() {
 	R.router.POST("/sets/del/:key", delHandler)
 	s := &http.Server{
 		Addr:    fmt.Sprintf(":%s", os.Getenv(CachedbPort)),
-		Handler: Logger(R.router),
+		Handler: Logger(Auth(R.router)),
 	}
 	fmt.Printf("Cachedb server running on port: %s\n", os.Getenv(CachedbPort))
 	log.Fatal(s.ListenAndServe())
