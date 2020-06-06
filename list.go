@@ -109,9 +109,10 @@ func (l *List) values(response chan ChannelResponse) {
 	} else {
 		startRef := l.head
 		var b strings.Builder
+		b.WriteString("%%")
 		for startRef != nil {
 			b.WriteString(startRef.data)
-			b.WriteString(" ")
+			b.WriteString("%%")
 			startRef = startRef.next
 		}
 		response <- ChannelResponse{Data: b.String(), Error: nil}
