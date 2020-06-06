@@ -39,7 +39,7 @@ type Config struct {
 func initConfigFile() {
 	dirPath := filepath.Join(os.Getenv("HOME"), ConfigDir)
 	configFilePath := filepath.Join(dirPath, ConfigFile)
-	defaultConfig := Config{Port: "9898", User: "", Password: ""}
+	defaultConfig := Config{Port: "9898", User: "cachedb", Password: "cachedb"}
 	if _, err := os.Stat(configFilePath); err != nil {
 		os.Mkdir(dirPath, 0755)
 		f, err := os.Create(configFilePath)
