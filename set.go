@@ -40,7 +40,9 @@ func (s *Set) set(value string, ttl int, response chan ChannelResponse) {
 func (s *Set) get(response chan ChannelResponse) {
 	now := time.Now()
 	expiration := s.AddedAt.Add(s.TTL)
-	if now.Sub(expiration) > 0 {
+	if s.TTL < 0 {
+		response <- ChannelResponse{Data: s.Data, Error: nil}
+	} else if now.Sub(expiration) > 0 {
 		response <- ChannelResponse{Data: nilString, Error: errors.New(keyExpired)}
 	} else {
 		response <- ChannelResponse{Data: s.Data, Error: nil}
