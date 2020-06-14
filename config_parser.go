@@ -34,7 +34,7 @@ func parseMemory(memory string) uint {
 		memory = mbRegex.ReplaceAllString(memory, "")
 		suffix = 1024 * 1024
 	} else if memory[len(memory)-2] == 'g' {
-		memory = gbRegex.ReplaceAllString(memory, "g")
+		memory = gbRegex.ReplaceAllString(memory, "")
 		suffix = 1024 * 1024 * 1024
 	}
 	prefix, err := strconv.Atoi(memory)
