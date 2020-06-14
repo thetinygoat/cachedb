@@ -1,4 +1,4 @@
-// Copyright (C) 2020  Sachin Saini
+// Copyright (C) 2020 Sachin Saini
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -15,112 +15,157 @@
 
 package main
 
-import (
-	"errors"
-	"strings"
-)
+import "time"
 
-// ListNode -> Node struct
-type ListNode struct {
-	data string
-	next *ListNode
-	prev *ListNode
-}
-
-// List -> List struct
+// List holds the elements, which point to next and previous elements
 type List struct {
-	name string
-	head *ListNode
-	tail *ListNode
+	head *element
+	tail *element
 	size int
 }
 
-// LMap -> List map to hold refs to all the lists
-var LMap = make(map[string]*List)
-
-func (l *List) append(data string, response chan ChannelResponse) {
-	newNode := &ListNode{data: data, prev: l.tail}
-	if l.size == 0 {
-		l.head = newNode
-		l.tail = newNode
-	} else {
-		l.tail.next = newNode
-		l.tail = newNode
-	}
-	l.size++
-	response <- ChannelResponse{Data: ok, Error: nil}
+type element struct {
+	key     string
+	value   string
+	ex      int
+	addedAt time.Time
+	next    *element
+	prev    *element
 }
 
-func (l *List) prepend(data string, response chan ChannelResponse) {
-	newNode := &ListNode{data: data, next: l.head}
-	if l.size == 0 {
-		l.head = newNode
-		l.tail = newNode
-	} else {
-		l.head.prev = newNode
-		l.head = newNode
-	}
-	l.size++
-	response <- ChannelResponse{Data: ok, Error: nil}
+// New instantiates a new list
+func New() *List {
+	return &List{}
 }
 
-func (l *List) removelast(response chan ChannelResponse) {
-
-	if l.size == 0 {
-		response <- ChannelResponse{Data: nilString, Error: errors.New(listEmpty)}
-	} else if l.size == 1 {
-		data := l.head.data
-		l.clear()
-		response <- ChannelResponse{Data: data, Error: nil}
+// Append appends a value to the list
+func (list *List) Append(key string, value string, ex int, addedAt time.Time) {
+	newElement := &element{key: key, value: value, ex: ex, addedAt: addedAt, prev: list.tail}
+	if list.size == 0 {
+		list.head = newElement
+		list.tail = newElement
 	} else {
-		node := l.tail
-		data := node.data
-		if l.tail.prev != nil {
-			l.tail = l.tail.prev
-		}
-		node = nil
-		l.size--
-		response <- ChannelResponse{Data: data, Error: nil}
+		list.tail.next = newElement
+		list.tail = newElement
 	}
+	list.size++
+
 }
 
-func (l *List) removefirst(response chan ChannelResponse) {
-	if l.size == 0 {
-		response <- ChannelResponse{Data: nilString, Error: errors.New(listEmpty)}
-	} else if l.size == 1 {
-		data := l.head.data
-		l.clear()
-		response <- ChannelResponse{Data: data, Error: nil}
+// Prepend prepends a value to the list
+func (list *List) Prepend(key string, value string, ex int, addedAt time.Time) {
+	newElement := &element{key: key, value: value, ex: ex, addedAt: addedAt, next: list.head}
+	if list.size == 0 {
+		list.head = newElement
+		list.tail = newElement
 	} else {
-		node := l.head
-		data := node.data
-		if l.head.next != nil {
-			l.head = l.head.next
-		}
-		node = nil
-		l.size--
-		response <- ChannelResponse{Data: data, Error: nil}
+		list.head.prev = newElement
+		list.head = newElement
 	}
+	list.size++
+
 }
 
-func (l *List) values(response chan ChannelResponse) {
-	if l.size == 0 {
-		response <- ChannelResponse{Data: nilString, Error: errors.New(listEmpty)}
-	} else {
-		startRef := l.head
-		var b strings.Builder
-		b.WriteString("%%")
-		for startRef != nil {
-			b.WriteString(startRef.data)
-			b.WriteString("%%")
-			startRef = startRef.next
-		}
-		response <- ChannelResponse{Data: b.String(), Error: nil}
+// GetFirst returns first element from the list
+func (list *List) GetFirst() []string {
+	if list.size == 0 {
+		return nil
 	}
+	return []string{list.head.key, list.head.value}
 }
 
-func (l *List) clear() {
-	l.size = 0
-	l.head = nil
-	l.tail = nil
+// GetFirstRef returns reference to first element from the list
+func (list *List) GetFirstRef() *element {
+	if list.size == 0 {
+		return nil
+	}
+	return list.head
+}
+
+// GetLast returns first element from the list
+func (list *List) GetLast() []string {
+	if list.size == 0 {
+		return nil
+	}
+	return []string{list.tail.key, list.tail.value}
+}
+
+// GetLastRef returns reference to last element from the list
+func (list *List) GetLastRef() *element {
+	if list.size == 0 {
+		return nil
+	}
+	return list.tail
+}
+
+// RemoveFirst removes an element from the front of the list
+func (list *List) RemoveFirst() {
+	if list.size == 0 {
+		return
+	}
+	if list.size == 1 {
+		list.Clear()
+		return
+	}
+	if list.head.next != nil {
+		list.head = list.head.next
+	}
+	list.head.prev = nil
+	list.size--
+}
+
+// RemoveLast removes an element from the end of the list
+func (list *List) RemoveLast() {
+	if list.size == 0 {
+		return
+	}
+	if list.size == 1 {
+		list.Clear()
+		return
+	}
+	if list.tail.prev != nil {
+		list.tail = list.tail.prev
+	}
+	list.tail.next = nil
+	list.size--
+}
+
+// Remove removes node from anyhwere in between
+func (list *List) Remove(el *element) {
+	if list.size == 0 {
+		return
+	}
+
+	if list.size == 1 {
+		list.Clear()
+		return
+	}
+
+	prev := el.prev
+	next := el.next
+
+	if prev != nil {
+		prev.next = next
+	}
+	if next != nil {
+		next.prev = prev
+	}
+	el = nil
+}
+
+// Empty returns if list is empty or not
+func (list *List) Empty() bool {
+	return list.size == 0
+}
+
+// Size returns the size of the list
+func (list *List) Size() int {
+	return list.size
+}
+
+// Clear removes all elements from the list
+func (list *List) Clear() {
+	list.size = 0
+	list.head = nil
+	list.tail = nil
 }
