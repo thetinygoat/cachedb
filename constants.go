@@ -31,4 +31,4 @@ var EvictionPolicy string
 var OperationMode string
 
 // MaxMemory is the memory cachedb is allowed to use
-var MaxMemory uint
+var MaxMemory uint64

@@ -22,7 +22,7 @@ import (
 	"strconv"
 )
 
-func parseMemory(memory string) uint {
+func parseMemory(memory string) uint64 {
 	kbRegex := regexp.MustCompile("kb$")
 	mbRegex := regexp.MustCompile("mb$")
 	gbRegex := regexp.MustCompile("gb$")
@@ -42,7 +42,7 @@ func parseMemory(memory string) uint {
 		panic(err)
 	}
 
-	return uint(prefix) * suffix
+	return uint64(uint(prefix) * suffix)
 }
 
 // set global vars
