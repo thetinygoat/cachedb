@@ -32,3 +32,17 @@ var OperationMode string
 
 // MaxMemory is the memory cachedb is allowed to use
 var MaxMemory uint64
+
+// cache status codes and messages
+const (
+	StatusNotFound        = 101
+	StatusExpired         = 102
+	StatusOk              = 103
+	StatusMemoryOverload  = 104
+	StatusUnexpected      = 105
+	MessageNotFound       = "<no such key>"
+	MessageExpired        = "<key expired>"
+	MessageOk             = "<ok>"
+	MessageMemoryOverload = "<memory overload>"
+	MessageUnexpected     = "<unexpected error>"
+)
