@@ -15,6 +15,8 @@
 
 package main
 
+import "time"
+
 // List holds the elements, which point to next and previous elements
 type List struct {
 	head *element
@@ -23,10 +25,12 @@ type List struct {
 }
 
 type element struct {
-	key   string
-	value string
-	next  *element
-	prev  *element
+	key     string
+	value   string
+	ex      int
+	addedAt time.Time
+	next    *element
+	prev    *element
 }
 
 // New instantiates a new list
@@ -35,8 +39,8 @@ func New() *List {
 }
 
 // Append appends a value to the list
-func (list *List) Append(key string, value string) {
-	newElement := &element{key: key, value: value, prev: list.tail}
+func (list *List) Append(key string, value string, ex int, addedAt time.Time) {
+	newElement := &element{key: key, value: value, ex: ex, addedAt: addedAt, prev: list.tail}
 	if list.size == 0 {
 		list.head = newElement
 		list.tail = newElement
@@ -49,8 +53,8 @@ func (list *List) Append(key string, value string) {
 }
 
 // Prepend prepends a value to the list
-func (list *List) Prepend(key string, value string) {
-	newElement := &element{key: key, value: value, next: list.head}
+func (list *List) Prepend(key string, value string, ex int, addedAt time.Time) {
+	newElement := &element{key: key, value: value, ex: ex, addedAt: addedAt, next: list.head}
 	if list.size == 0 {
 		list.head = newElement
 		list.tail = newElement
