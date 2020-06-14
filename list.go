@@ -23,6 +23,7 @@ type List struct {
 }
 
 type element struct {
+	key   string
 	value string
 	next  *element
 	prev  *element
@@ -30,54 +31,67 @@ type element struct {
 
 // New instantiates a new list
 func New() *List {
-	list := &List{}
-	return list
+	return &List{}
 }
 
 // Append appends a value to the list
-func (list *List) Append(values ...string) {
-	for _, value := range values {
-		newElement := &element{value: value, prev: list.tail}
-		if list.size == 0 {
-			list.head = newElement
-			list.tail = newElement
-		} else {
-			list.tail.next = newElement
-			list.tail = newElement
-		}
-		list.size++
+func (list *List) Append(key string, value string) {
+	newElement := &element{key: key, value: value, prev: list.tail}
+	if list.size == 0 {
+		list.head = newElement
+		list.tail = newElement
+	} else {
+		list.tail.next = newElement
+		list.tail = newElement
 	}
+	list.size++
+
 }
 
 // Prepend prepends a value to the list
-func (list *List) Prepend(values ...string) {
-	for v := len(values) - 1; v >= 0; v-- {
-		newElement := &element{value: values[v], next: list.head}
-		if list.size == 0 {
-			list.head = newElement
-			list.tail = newElement
-		} else {
-			list.head.prev = newElement
-			list.head = newElement
-		}
-		list.size++
+func (list *List) Prepend(key string, value string) {
+	newElement := &element{key: key, value: value, next: list.head}
+	if list.size == 0 {
+		list.head = newElement
+		list.tail = newElement
+	} else {
+		list.head.prev = newElement
+		list.head = newElement
 	}
+	list.size++
+
 }
 
 // GetFirst returns first element from the list
-func (list *List) GetFirst() (string, bool) {
+func (list *List) GetFirst() []string {
 	if list.size == 0 {
-		return "", false
+		return nil
 	}
-	return list.head.value, true
+	return []string{list.head.key, list.head.value}
+}
+
+// GetFirstRef returns reference to first element from the list
+func (list *List) GetFirstRef() *element {
+	if list.size == 0 {
+		return nil
+	}
+	return list.head
 }
 
 // GetLast returns first element from the list
-func (list *List) GetLast() (string, bool) {
+func (list *List) GetLast() []string {
 	if list.size == 0 {
-		return "", false
+		return nil
 	}
-	return list.tail.value, true
+	return []string{list.tail.key, list.tail.value}
+}
+
+// GetLastRef returns reference to last element from the list
+func (list *List) GetLastRef() *element {
+	if list.size == 0 {
+		return nil
+	}
+	return list.tail
 }
 
 // RemoveFirst removes an element from the front of the list
@@ -110,6 +124,29 @@ func (list *List) RemoveLast() {
 	}
 	list.tail.next = nil
 	list.size--
+}
+
+// Remove removes node from anyhwere in between
+func (list *List) Remove(el *element) {
+	if list.size == 0 {
+		return
+	}
+
+	if list.size == 1 {
+		list.Clear()
+		return
+	}
+
+	prev := el.prev
+	next := el.next
+
+	if prev != nil {
+		prev.next = next
+	}
+	if next != nil {
+		next.prev = prev
+	}
+	el = nil
 }
 
 // Empty returns if list is empty or not
