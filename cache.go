@@ -42,7 +42,7 @@ type Lazy struct {
 func (lazy *Lazy) Get(key string) (string, int) {
 	c, exists := lazy.cache[key]
 	if !exists {
-		return "", StatusNotFound
+		return MessageNotFound, StatusNotFound
 	}
 	// indefinite expiration time
 	if c.ex == -1 {
@@ -54,7 +54,7 @@ func (lazy *Lazy) Get(key string) (string, int) {
 	if now.Sub(ex) > 0 {
 		lazy.size -= uint64(len(key) + len(c.value))
 		delete(lazy.cache, key)
-		return "", StatusExpired
+		return MessageExpired, StatusExpired
 	}
 
 	return c.value, StatusOk
