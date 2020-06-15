@@ -63,7 +63,7 @@ func setVar(pair []string) {
 
 // ReadConfig reads and parses config file
 func ReadConfig() {
-	f, err := os.Open("cachedb.conf")
+	f, err := os.Open(ConfigFile)
 	if err != nil {
 		panic(err)
 	}
