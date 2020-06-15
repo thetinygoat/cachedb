@@ -33,6 +33,9 @@ var OperationMode string
 // MaxMemory is the memory cachedb is allowed to use
 var MaxMemory uint64
 
+// ConfigFile proviedes name for config file
+var ConfigFile = "cachedb.conf"
+
 // cache status codes and messages
 const (
 	StatusNotFound        = 101
@@ -40,9 +43,14 @@ const (
 	StatusOk              = 103
 	StatusMemoryOverload  = 104
 	StatusUnexpected      = 105
-	MessageNotFound       = "<no such key>"
-	MessageExpired        = "<key expired>"
+	MessageNotFound       = "<nil>"
+	MessageExpired        = "<exp>"
 	MessageOk             = "<ok>"
-	MessageMemoryOverload = "<memory overload>"
-	MessageUnexpected     = "<unexpected error>"
+	MessageMemoryOverload = "<memovld>"
+	MessageUnexpected     = "an unexpected error occured"
+)
+
+// response messages for handlers
+const (
+	MessageMalformed = "<malformed>"
 )
