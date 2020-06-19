@@ -33,7 +33,7 @@ var OperationMode string
 // MaxMemory is the memory cachedb is allowed to use
 var MaxMemory uint64
 
-// ConfigFile proviedes name for config file
+// ConfigFile provides name for config file
 var ConfigFile = "cachedb.conf"
 
 // cache status codes and messages

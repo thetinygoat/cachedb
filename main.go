@@ -15,8 +15,11 @@
 
 package main
 
+import "fmt"
+
 func main() {
 	ReadConfig()
 	handler := CacheInit()
-	connect(handler)
+	fmt.Printf("starting cachedb in normal mode on port :%s\n", Port)
+	Connect(handler)
 }

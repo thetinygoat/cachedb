@@ -22,7 +22,8 @@ import (
 	"strings"
 )
 
-func connect(handler *Handler) {
+// Connect operates cachedb in normal mode
+func Connect(handler *Handler) {
 	ln, err := net.Listen("tcp", ":"+Port)
 	if err != nil {
 		panic(err)
@@ -42,16 +43,20 @@ func handle(conn net.Conn, handler *Handler) {
 		if err != nil && err != io.EOF {
 			panic(err)
 		}
-		buf = buf[:len(buf)-1]
-		parsed := requestParser(string(buf))
-		var res string
-		if parsed[0] == "get" {
-			res = handler.handleGet(parsed[1:])
-		} else if parsed[0] == "set" {
-			res = handler.handleSet(parsed[1:])
-		}
+		if len(buf) > 0 {
+			buf = buf[:len(buf)-1]
+			parsed := requestParser(string(buf))
+			var res string
+			if parsed[0] == "get" {
+				res = handler.handleGet(parsed[1:])
+			} else if parsed[0] == "set" {
+				res = handler.handleSet(parsed[1:])
+			}
 
-		conn.Write([]byte(res + "\n"))
+			conn.Write([]byte(res + "\n"))
+		} else {
+			conn.Close()
+		}
 	}
 }
 
